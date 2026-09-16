@@ -1,0 +1,311 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+							</style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Reverse Dictionary</title>
+  <style>
+    :root {
+      --bg: #0a0a0c;
+      --card: #141416;
+      --card-hover: #1a1a1e;
+      --border: #26262b;
+      --accent: #ff6b47;
+      --accent-glow: rgba(255, 107, 71, 0.35);
+      --text: #f2f2f5;
+      --text-dim: #8a8a95;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', -apple-system, Arial, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; justify-content: center;
+      padding: 60px 20px;
+    }
+    .container { width: 100%; max-width: 620px; }
+
+    /* Header with icon */
+    .header { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+    .logo-icon {
+      width: 46px; height: 46px; border-radius: 13px;
+      background: linear-gradient(135deg, var(--accent), #ff9a47);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px var(--accent-glow); flex-shrink: 0;
+    }
+    .logo-icon svg { width: 26px; height: 26px; }
+    h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+    .subtitle { color: var(--text-dim); font-size: 15px; margin: 0 0 32px 60px; }
+
+    /* Search bar */
+    .search-wrap { display: flex; gap: 12px; align-items: center; }
+    .input-box { flex: 1; position: relative; }
+    .input-box .search-ico {
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+      width: 18px; height: 18px; color: var(--text-dim); pointer-events: none;
+    }
+    .input-box input {
+      width: 100%; padding: 16px 18px 16px 46px; font-size: 16px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; color: var(--text); outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .input-box input::placeholder { color: var(--text-dim); }
+    .input-box input:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    button.search-btn {
+      padding: 16px 26px; font-size: 16px; font-weight: 700; color: #fff;
+      background: var(--accent); border: none; border-radius: 14px;
+      cursor: pointer; transition: transform .1s; box-shadow: 0 4px 20px var(--accent-glow);
+    }
+    button.search-btn:hover { transform: translateY(-2px); }
+
+    #status { font-size: 13px; color: var(--text-dim); height: 18px; margin: 18px 4px 0; }
+    #result { margin-top: 10px; }
+
+    /* Result sections */
+    .section { margin-top: 24px; }
+    .section-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px;
+      margin: 0 4px 14px; color: var(--accent);
+    }
+    .section-title .badge-ico { width: 15px; height: 15px; }
+
+    .word-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+    .word {
+      padding: 13px 20px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+      opacity: 0; transform: translateY(10px); animation: rise .4s forwards;
+    }
+    .word:hover {
+      border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+      background: var(--card-hover); color: var(--accent);
+    }
+    .word.active {
+      border-color: var(--accent); background: var(--accent); color: #fff;
+    }
+    @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+    /* Definition — Meaning panel */
+    .def-panel {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 22px; min-height: 60px;
+      animation: rise .4s forwards;
+    }
+    .def-word {
+      font-size: 22px; font-weight: 800; color: var(--accent);
+      margin-bottom: 4px; text-transform: capitalize;
+    }
+    .def-pos { font-size: 13px; color: var(--text-dim); font-style: italic; margin-bottom: 12px; }
+    .def-text { font-size: 16px; line-height: 1.6; color: var(--text); }
+    .def-hint { color: var(--text-dim); font-size: 14px; font-style: italic; }
+
+    .empty { color: var(--text-dim); font-size: 14px; padding: 4px; font-style: italic; }
+    .error {
+      color: var(--accent); background: var(--card); border: 1px solid var(--border);
+      padding: 16px 18px; border-radius: 14px; font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 5a2 2 0 0 1 2-2h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2z"/>
+          <path d="M4 17a2 2 0 0 1 2-2h13"/>
+          <path d="M9 8h6"/>
+          <path d="M11 11l-2-1.5L11 8"/>
+        </svg>
+      </div>
+      <h1>The Reverse Dictionary</h1>
+    </div>
+    <p class="subtitle">Describe a meaning — get the word.</p>
+
+    <div class="search-wrap">
+      <div class="input-box">
+        <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input id="meaningInput" type="text" autocomplete="off" />
+      </div>
+      <button class="search-btn" onclick="reverseLookup()">Search</button>
+    </div>
+
+    <div id="status"></div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    /* ---------- Animated typing placeholder ---------- */
+    const input = document.getElementById('meaningInput');
+    const PREFIX = "Your ";
+    const WORDS = ["thoughts", "feelings", "description"]; // ellipses removed
+    let wi = 0, ci = 0, deleting = false;
+
+    function typeLoop() {
+      if (input.value.length > 0) { input.placeholder = "Your thoughts"; return; }
+
+      const word = WORDS[wi];
+      if (!deleting) {
+        input.placeholder = PREFIX + word.slice(0, ci);
+        ci++;
+        if (ci > word.length) {
+          deleting = true;
+          setTimeout(typeLoop, 1000); // hold full word 1s
+          return;
+        }
+      } else {
+        input.placeholder = PREFIX + word.slice(0, ci);
+        ci--;
+        if (ci < 0) {
+          deleting = false; ci = 0;
+          wi = (wi + 1) % WORDS.length;
+          if (wi === 0) wi = 1; // after 'description', loop back to 'feelings'
+        }
+      }
+      // typing 90ms; deleting 50% faster than before (was 45 → now ~22)
+      setTimeout(typeLoop, deleting ? 22 : 90);
+    }
+    typeLoop();
+
+    /* ---------- Fetch matching words ---------- */
+    async function fetchMeaning(phrase) {
+      // Prefer synonyms; fall back to "means like" for phrases
+      try {
+        let res = await fetch(`https://api.datamuse.com/words?rel_syn=${encodeURIComponent(phrase)}&max=12`);
+        let data = await res.json();
+        let words = data.filter(c => /^[a-zA-Z]+$/.test(c.word)).slice(0, 8);
+        if (words.length === 0) {
+          res = await fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(phrase)}&max=15`);
+          data = await res.json();
+          words = data.filter(c => /^[a-zA-Z]+$/.test(c.word)).slice(0, 8);
+        }
+        return words;
+      } catch { return []; }
+    }
+
+    /* ---------- Fetch a single word's definition ---------- */
+    const defCache = new Map();
+    async function getDefinition(word) {
+      if (defCache.has(word)) return defCache.get(word);
+      let entry;
+      try {
+        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        if (!res.ok) {
+          entry = { pos: '', text: 'No definition found for this word.' };
+        } else {
+          const data = await res.json();
+          const meaning = data[0].meanings[0];
+          entry = { pos: meaning.partOfSpeech || '', text: meaning.definitions[0].definition };
+        }
+      } catch {
+        entry = { pos: '', text: 'Could not load definition. Check your connection.' };
+      }
+      defCache.set(word, entry);
+      return entry;
+    }
+
+    /* ---------- Show definition when a word is clicked ---------- */
+    async function selectWord(word, el) {
+      document.querySelectorAll('.word').forEach(w => w.classList.remove('active'));
+      el.classList.add('active');
+
+      const panel = document.getElementById('defPanel');
+      panel.innerHTML = `<span class="def-hint">Loading definition…</span>`;
+
+      const { pos, text } = await getDefinition(word);
+      panel.innerHTML = `
+        <div class="def-word">${word}</div>
+        ${pos ? `<div class="def-pos">${pos}</div>` : ''}
+        <div class="def-text">${text}</div>`;
+    }
+    window.selectWord = selectWord;
+
+    /* ---------- Main ---------- */
+    async function reverseLookup() {
+      const meaning = input.value.trim();
+      const result = document.getElementById('result');
+      const status = document.getElementById('status');
+
+      if (!meaning) {
+        result.innerHTML = '<p class="error">Please type a meaning or description.</p>';
+        return;
+      }
+
+      result.innerHTML = '';
+      status.textContent = 'Searching…';
+
+      try {
+        const words = await fetchMeaning(meaning);
+        status.textContent = '';
+
+        if (words.length === 0) {
+          result.innerHTML = `<p class="error">No matches found. Try rewording your description.</p>`;
+          return;
+        }
+
+        let html = '';
+
+        // MATCHING — WORD(s)
+        html += `<div class="section">
+          <div class="section-title">
+            <svg class="badge-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            Matching — Word(s)
+          </div>
+          <div class="word-grid">`;
+        words.forEach((c, i) => {
+          const safe = c.word.replace(/'/g, "\\'");
+          html += `<div class="word" style="animation-delay:${i*0.05}s" onclick="selectWord('${safe}', this)">${c.word}</div>`;
+        });
+        html += `</div></div>`;
+
+        // Definition — Meaning
+        html += `<div class="section">
+          <div class="section-title">
+            <svg class="badge-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Definition — Meaning
+          </div>
+          <div class="def-panel" id="defPanel">
+            <span class="def-hint">Click a word above to see its exact definition.</span>
+          </div>
+        </div>`;
+
+        result.innerHTML = html;
+
+      } catch (err) {
+        status.textContent = '';
+        result.innerHTML = `<p class="error">Couldn't reach the word service: ${err.message}.</p>`;
+      }
+    }
+
+    input.addEventListener('keypress', e => {
+      if (e.key === 'Enter') reverseLookup();
+    });
+  </script>
+</body>
+</html>
+
+							<script>
+                            	
+							</script>
+                        </body>
+                        </html>
+                    
